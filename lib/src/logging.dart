@@ -13,7 +13,8 @@ abstract class Log {
     Error? error,
     StackTrace? stackTrace,
     required DateTime time,
-  })? onLog;
+  })?
+  onLog;
 
   static void l(
     LoggingLevel level,
@@ -22,6 +23,7 @@ abstract class Log {
     StackTrace? stackTrace,
     DateTime? time,
   }) {
+    if (!levels.contains(level)) return;
     onLog?.call(
       level,
       value,
@@ -36,82 +38,76 @@ abstract class Log {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.trace,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.trace,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 
   static void d(
     Object? value, {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.debug,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.debug,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 
   static void i(
     Object? value, {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.info,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.info,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 
   static void w(
     Object? value, {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.warning,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.warning,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 
   static void e(
     Object? value, {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.error,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.error,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 
   static void f(
     Object? value, {
     Error? error,
     StackTrace? stackTrace,
     DateTime? time,
-  }) =>
-      l(
-        LoggingLevel.fatal,
-        value,
-        error: error,
-        stackTrace: stackTrace,
-        time: time,
-      );
+  }) => l(
+    LoggingLevel.fatal,
+    value,
+    error: error,
+    stackTrace: stackTrace,
+    time: time,
+  );
 }
