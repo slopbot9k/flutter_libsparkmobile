@@ -60,6 +60,10 @@ bool get enableDebugLogging =>
 bool get enableTraceLogging =>
     Log.onLog != null && Log.levels.contains(LoggingLevel.trace);
 
+/// Dart bindings for the Spark native library.
+///
+/// Hex-encoded keys and hashes shorter than 64 characters are left-padded
+/// with zeros before use; longer values are rejected.
 abstract final class LibSpark {
   static int _id = 0;
 
@@ -1235,6 +1239,7 @@ abstract final class LibSpark {
   /// Identifies and recovers a coin using a FullViewKey.
   ///
   /// Returns a [LibSparkCoin] if the coin belongs to us, or null otherwise.
+  /// Bytes after the coin, such as a mint script's value proof, are ignored.
   static LibSparkCoin? identifyAndRecoverCoinByFullViewKey({
     required String serializedCoin,
     required String fullViewKeyHex,
@@ -1257,7 +1262,8 @@ abstract final class LibSpark {
     bool isTestNet,
   ) {
     return using((arena) {
-      final coin = Uint8List.sublistView(base64Decode(serializedCoin), 0, 244);
+      final coin = base64Decode(serializedCoin);
+      _checkInt32(coin.length, 'serializedCoin.length');
       final result = native_idAndRecoverCoinByFullViewKey(
         coin.unsignedCharPointer(arena),
         coin.length,

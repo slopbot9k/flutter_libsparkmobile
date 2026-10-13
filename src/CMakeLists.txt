@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.16)
+# target_link_options below needs CMake 3.13.
+cmake_minimum_required(VERSION 3.13)
 
 project(flutter_libsparkmobile_library VERSION 0.0.1)
 

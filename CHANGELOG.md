@@ -2,6 +2,7 @@
 
 * Fix FFI validation, memory cleanup, memo handling, logging, and package contents.
 * Report the native reason when a call fails instead of a generic message.
+* Reject non-canonical batch tags, validate native spend arguments, and treat short coins as foreign.
 
 ## 0.2.0
 
