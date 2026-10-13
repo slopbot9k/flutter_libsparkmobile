@@ -389,6 +389,9 @@ final class CMintedCoinData extends ffi.Struct {
   external int value;
 
   external ffi.Pointer<ffi.Char> memo;
+
+  @ffi.Int()
+  external int memoLength;
 }
 
 final class PubKeyScript extends ffi.Struct {
@@ -541,6 +544,9 @@ final class AggregateCoinData extends ffi.Struct {
   external ffi.Pointer<ffi.Char> address;
 
   external ffi.Pointer<ffi.Char> memo;
+
+  @ffi.Int()
+  external int memoLength;
 
   external ffi.Pointer<ffi.Char> lTagHash;
 
