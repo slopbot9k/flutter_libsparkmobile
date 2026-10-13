@@ -577,6 +577,9 @@ abstract final class LibSpark {
           isTestNet ? 1 : 0,
         );
         if (result == nullptr) {
+          Log.w(
+            'validateAddress failed: ${_takeLastError() ?? 'unknown reason'}',
+          );
           return false;
         }
         try {
@@ -1053,9 +1056,22 @@ abstract final class LibSpark {
 
   static Pointer<T> _requirePointer<T extends NativeType>(Pointer<T> pointer) {
     if (pointer == nullptr) {
-      throw Exception('Native call failed');
+      throw Exception(_takeLastError() ?? 'Native call failed');
     }
     return pointer;
+  }
+
+  /// Returns and clears the reason the last native call on this thread failed.
+  static String? _takeLastError() {
+    final error = native_last_error();
+    if (error == nullptr) {
+      return null;
+    }
+    try {
+      return error.cast<Utf8>().toDartString();
+    } finally {
+      freeNative(error, debugName: 'error');
+    }
   }
 
   static Pointer<DartSpendCoinData> _spendCoins(
