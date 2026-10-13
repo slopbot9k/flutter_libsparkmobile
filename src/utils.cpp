@@ -648,8 +648,8 @@ const char *bytesToHex(std::vector<unsigned char> bytes, int size) {
 }
 
 spark::Coin deserializeCoin(const unsigned char *serializedCoin, int length) {
-    std::vector<unsigned char> vec(serializedCoin, serializedCoin + length);
-    CDataStream stream(vec, SER_NETWORK, PROTOCOL_VERSION);
+    const char* bytes = reinterpret_cast<const char*>(serializedCoin);
+    CDataStream stream(bytes, bytes + length, SER_NETWORK, PROTOCOL_VERSION);
     spark::Coin coin(spark::Params::get_default());
     stream >> coin;
     return coin;

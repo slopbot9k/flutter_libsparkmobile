@@ -2,7 +2,13 @@ import 'dart:typed_data';
 
 extension Uint8ListExt on Uint8List {
   String toHexString() {
-    return map((byte) => byte.toRadixString(16).padLeft(2, '0')).join();
+    const digits = '0123456789abcdef';
+    final chars = Uint8List(length * 2);
+    for (int i = 0; i < length; i++) {
+      chars[i * 2] = digits.codeUnitAt(this[i] >> 4);
+      chars[i * 2 + 1] = digits.codeUnitAt(this[i] & 15);
+    }
+    return String.fromCharCodes(chars);
   }
 }
 
@@ -18,29 +24,12 @@ extension StringExt on String {
 
   Uint8List to32OrMoreBytesFromHex() {
     // Pad the string to 64 characters with zeros if it's shorter.
-    String hexString = padLeft(64, '0');
+    final hexString = padLeft(64, '0');
 
-    List<int> bytes = [];
+    final bytes = Uint8List(hexString.length ~/ 2);
     for (int i = 0; i < hexString.length; i += 2) {
-      var byteString = hexString.substring(i, i + 2);
-      var byteValue = int.parse(byteString, radix: 16);
-      bytes.add(byteValue);
+      bytes[i ~/ 2] = int.parse(hexString.substring(i, i + 2), radix: 16);
     }
-    return Uint8List.fromList(bytes);
-  }
-}
-
-final _reg = RegExp("[A-Za-z0-9]");
-const _space = " ";
-
-extension StackTraceExt on StackTrace {
-  String get functionName {
-    final stackTraceString = toString();
-    final str = stackTraceString.substring(stackTraceString.indexOf(_space));
-    final index = str.indexOf(_reg);
-    return str.substring(index).substring(
-          0,
-          str.substring(index).indexOf(_space),
-        );
+    return bytes;
   }
 }

@@ -75,7 +75,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.getAddress';
       if (enableTraceLogging) {
         function +=
             "(privateKey=REDACTED,"
@@ -113,7 +113,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.getAddress"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -155,7 +155,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.serializeMintContext';
       if (enableTraceLogging) {
         function += "(inputs=$inputs)";
       }
@@ -196,7 +196,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.serializeMintContext"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -222,7 +222,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.createSparkMintRecipients';
       if (enableTraceLogging) {
         function +=
             "(outputs=$outputs,"
@@ -246,7 +246,7 @@ abstract final class LibSpark {
       return using((arena) {
         final outputsPtr = arena<CMintedCoinData>(outputs.length);
         for (int i = 0; i < outputs.length; i++) {
-          final memo = Uint8List.fromList(utf8.encode(outputs[i].memo));
+          final memo = utf8.encode(outputs[i].memo);
           _checkInt32(memo.length, 'memo.length');
           outputsPtr[i].value = outputs[i].value;
           outputsPtr[i].address = outputs[i].sparkAddress
@@ -290,7 +290,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.createSparkMintRecipients"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -359,7 +359,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.createSparkSendTransaction';
       if (enableTraceLogging) {
         function +=
             "(privateKeyHex=REDACTED,"
@@ -392,10 +392,6 @@ abstract final class LibSpark {
       for (final recipient in privateRecipients) {
         _checkCString(recipient.sparkAddress, 'sparkAddress');
       }
-      for (final coin in serializedCoins) {
-        _checkInt32(coin.groupId, 'groupId', signed: true);
-        _checkInt32(coin.height, 'height', signed: true);
-      }
       for (final set in allAnonymitySets) {
         _checkInt32(set.setId, 'setId');
         _checkInt32(set.set.length, 'set.length');
@@ -422,10 +418,8 @@ abstract final class LibSpark {
         );
         for (int i = 0; i < privateRecipients.length; i++) {
           final recipient = privateRecipients[i];
-          final memo = Uint8List.fromList(utf8.encode(recipient.memo));
-          final address = Uint8List.fromList(
-            utf8.encode(recipient.sparkAddress),
-          );
+          final memo = utf8.encode(recipient.memo);
+          final address = utf8.encode(recipient.sparkAddress);
           _checkInt32(memo.length, 'memo.length');
           _checkInt32(address.length, 'address.length');
           privateRecipientsPtr[i].subtractFee = recipient.subtractFeeFromAmount
@@ -543,7 +537,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.createSparkSendTransaction"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -560,7 +554,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.validateAddress';
       if (enableTraceLogging) {
         function +=
             "(address=$address,"
@@ -601,7 +595,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.validateAddress"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -614,7 +608,7 @@ abstract final class LibSpark {
     required int spendKeyIndex,
     required int diversifier,
   }) {
-    final messageBytes = Uint8List.fromList(utf8.encode(message));
+    final messageBytes = utf8.encode(message);
     _checkInt32(messageBytes.length, 'message.length');
     _checkInt32(spendKeyIndex, 'spendKeyIndex');
     _checkInt32(diversifier, 'diversifier');
@@ -637,7 +631,8 @@ abstract final class LibSpark {
           throw Exception('Failed to create Spark address ownership proof');
         }
         return result.ref.proof
-            .toUint8List(result.ref.proofLength)
+            .cast<Uint8>()
+            .asTypedList(result.ref.proofLength)
             .toHexString();
       } finally {
         freeNative(result.ref.error, debugName: 'result.error');
@@ -659,7 +654,7 @@ abstract final class LibSpark {
         !RegExp(r'^[0-9a-fA-F]+$').hasMatch(proof)) {
       return false;
     }
-    final messageBytes = Uint8List.fromList(utf8.encode(message));
+    final messageBytes = utf8.encode(message);
     if (messageBytes.length > 0x7fffffff) {
       return false;
     }
@@ -689,7 +684,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.hashTags';
       if (enableTraceLogging) {
         function += "(base64Tags=$base64Tags)";
       }
@@ -705,18 +700,20 @@ abstract final class LibSpark {
         return [];
       }
       _checkInt32(base64Tags.length, 'base64Tags.length');
-      final tags = base64Tags.map(base64Decode).toList();
-      for (final tag in tags) {
-        _checkBytes(tag, 34, 'tag');
-      }
-      final bytes = Uint8List.fromList(tags.expand((tag) => tag).toList());
       return using((arena) {
+        final tags = arena<Uint8>(base64Tags.length * 34);
+        final bytes = tags.asTypedList(base64Tags.length * 34);
+        for (int i = 0; i < base64Tags.length; i++) {
+          final tag = base64Decode(base64Tags[i]);
+          _checkBytes(tag, 34, 'tag');
+          bytes.setRange(i * 34, (i + 1) * 34, tag);
+        }
         final result = _requirePointer(
-          native_hashTags(bytes.unsignedCharPointer(arena), tags.length),
+          native_hashTags(tags.cast<UnsignedChar>(), base64Tags.length),
         );
         try {
           return [
-            for (int i = 0; i < tags.length; i++)
+            for (int i = 0; i < base64Tags.length; i++)
               (result + i * 64).cast<Utf8>().toDartString(length: 64),
           ];
         } finally {
@@ -727,7 +724,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.hashTags"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -741,7 +738,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.hashTag';
       if (enableTraceLogging) {
         function += "(x=$x, y=$y)";
       }
@@ -773,7 +770,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.hashTag"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -805,7 +802,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.estimateSparkFee';
       if (enableTraceLogging) {
         function +=
             "(privateKeyHex=REDACTED,"
@@ -862,7 +859,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.estimateSparkFee"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -887,7 +884,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.createSparkNameScript';
       if (enableTraceLogging) {
         function +=
             "("
@@ -953,7 +950,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.createSparkNameScript"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -973,7 +970,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark.getSparkNameCommitment';
       if (enableTraceLogging) {
         function +=
             "(serializedSparkNameDataLength="
@@ -1026,7 +1023,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark.getSparkNameCommitment"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -1166,7 +1163,7 @@ abstract final class LibSpark {
           native_serializeFullViewKey(fullViewKey, size),
         );
         try {
-          return serialized.toUint8List(size.value).toHexString();
+          return serialized.cast<Uint8>().asTypedList(size.value).toHexString();
         } finally {
           freeNative(serialized, debugName: 'serialized');
         }
@@ -1202,17 +1199,21 @@ abstract final class LibSpark {
     required Uint8List context,
     bool isTestNet = false,
   }) {
-    final fullViewKeyHex = getFullViewKeyHexFromPrivateKeyData(
-      privateKeyHex: privateKeyHex,
-      index: index,
-    );
-
-    return identifyAndRecoverCoinByFullViewKey(
-      serializedCoin: serializedCoin,
-      fullViewKeyHex: fullViewKeyHex,
-      context: context,
-      isTestNet: isTestNet,
-    );
+    _checkInt32(index, 'index');
+    _checkInt32(context.length, 'context.length');
+    return using((arena) {
+      final fullViewKey = _requirePointer(
+        native_getFullViewKeyFromPrivateKeyData(
+          privateKeyHex.to32BytesFromHex().unsignedCharPointer(arena),
+          index,
+        ),
+      );
+      try {
+        return _recoverCoin(serializedCoin, fullViewKey, context, isTestNet);
+      } finally {
+        _deleteFullViewKey(fullViewKey);
+      }
+    });
   }
 
   /// Identifies and recovers a coin using a FullViewKey.
@@ -1227,59 +1228,68 @@ abstract final class LibSpark {
     _checkInt32(context.length, 'context.length');
     final fullViewKey = _deserializeFullViewKey(fullViewKeyHex: fullViewKeyHex);
     try {
-      return using((arena) {
-        final coin = base64Decode(serializedCoin).sublist(0, 244);
-        final result = native_idAndRecoverCoinByFullViewKey(
-          coin.unsignedCharPointer(arena),
-          coin.length,
-          fullViewKey,
-          context.unsignedCharPointer(arena),
-          context.length,
-          isTestNet ? 1 : 0,
-        );
-        if (result == nullptr) {
-          return null;
-        }
-        try {
-          final type = switch (result.ref.type) {
-            0 => LibSparkCoinType.mint,
-            1 => LibSparkCoinType.spend,
-            _ => throw StateError('Unknown coin type: ${result.ref.type}'),
-          };
-          return LibSparkCoin(
-            type: type,
-            nonceHex: result.ref.nonceHex.cast<Utf8>().toDartString(
-              length: result.ref.nonceHexLength,
-            ),
-            address: result.ref.address.cast<Utf8>().toDartString(),
-            value: BigInt.from(result.ref.value).toUnsigned(64),
-            memo: utf8.decode(
-              result.ref.memo.cast<Uint8>().asTypedList(result.ref.memoLength),
-              allowMalformed: true,
-            ),
-            diversifier: BigInt.from(result.ref.diversifier).toUnsigned(64),
-            encryptedDiversifier: result.ref.encryptedDiversifier.toUint8List(
-              result.ref.encryptedDiversifierLength,
-            ),
-            serial: result.ref.serial.toUint8List(result.ref.serialLength),
-            lTagHash: result.ref.lTagHash.cast<Utf8>().toDartString(),
-          );
-        } finally {
-          freeNative(result.ref.address, debugName: 'result.address');
-          freeNative(result.ref.memo, debugName: 'result.memo');
-          freeNative(result.ref.lTagHash, debugName: 'result.lTagHash');
-          freeNative(
-            result.ref.encryptedDiversifier,
-            debugName: 'result.encryptedDiversifier',
-          );
-          freeNative(result.ref.serial, debugName: 'result.serial');
-          freeNative(result.ref.nonceHex, debugName: 'result.nonceHex');
-          freeNative(result, debugName: 'result');
-        }
-      });
+      return _recoverCoin(serializedCoin, fullViewKey, context, isTestNet);
     } finally {
       _deleteFullViewKey(fullViewKey);
     }
+  }
+
+  static LibSparkCoin? _recoverCoin(
+    String serializedCoin,
+    Pointer<Void> fullViewKey,
+    Uint8List context,
+    bool isTestNet,
+  ) {
+    return using((arena) {
+      final coin = Uint8List.sublistView(base64Decode(serializedCoin), 0, 244);
+      final result = native_idAndRecoverCoinByFullViewKey(
+        coin.unsignedCharPointer(arena),
+        coin.length,
+        fullViewKey,
+        context.unsignedCharPointer(arena),
+        context.length,
+        isTestNet ? 1 : 0,
+      );
+      if (result == nullptr) {
+        return null;
+      }
+      try {
+        final type = switch (result.ref.type) {
+          0 => LibSparkCoinType.mint,
+          1 => LibSparkCoinType.spend,
+          _ => throw StateError('Unknown coin type: ${result.ref.type}'),
+        };
+        return LibSparkCoin(
+          type: type,
+          nonceHex: result.ref.nonceHex.cast<Utf8>().toDartString(
+            length: result.ref.nonceHexLength,
+          ),
+          address: result.ref.address.cast<Utf8>().toDartString(),
+          value: BigInt.from(result.ref.value).toUnsigned(64),
+          memo: utf8.decode(
+            result.ref.memo.cast<Uint8>().asTypedList(result.ref.memoLength),
+            allowMalformed: true,
+          ),
+          diversifier: BigInt.from(result.ref.diversifier).toUnsigned(64),
+          encryptedDiversifier: result.ref.encryptedDiversifier.toUint8List(
+            result.ref.encryptedDiversifierLength,
+          ),
+          serial: result.ref.serial.toUint8List(result.ref.serialLength),
+          lTagHash: result.ref.lTagHash.cast<Utf8>().toDartString(),
+        );
+      } finally {
+        freeNative(result.ref.address, debugName: 'result.address');
+        freeNative(result.ref.memo, debugName: 'result.memo');
+        freeNative(result.ref.lTagHash, debugName: 'result.lTagHash');
+        freeNative(
+          result.ref.encryptedDiversifier,
+          debugName: 'result.encryptedDiversifier',
+        );
+        freeNative(result.ref.serial, debugName: 'result.serial');
+        freeNative(result.ref.nonceHex, debugName: 'result.nonceHex');
+        freeNative(result, debugName: 'result');
+      }
+    });
   }
 
   /// Deletes a FullViewKey.
@@ -1290,7 +1300,7 @@ abstract final class LibSpark {
     if (enableDebugLogging) {
       id = _id++;
       start = DateTime.now();
-      String function = StackTrace.current.functionName;
+      String function = 'LibSpark._deleteFullViewKey';
       if (enableTraceLogging) {
         function += "(fullViewKey=$fullViewKey)";
       }
@@ -1308,7 +1318,7 @@ abstract final class LibSpark {
       if (enableDebugLogging) {
         Log.l(
           enableTraceLogging ? LoggingLevel.trace : LoggingLevel.debug,
-          "END($id) ${StackTrace.current.functionName}"
+          "END($id) LibSpark._deleteFullViewKey"
           " Duration=${DateTime.now().difference(start!)}",
         );
       }
@@ -1322,8 +1332,7 @@ extension on Pointer<UnsignedChar> {
   }
 
   String toBase64(int length) {
-    final data = toUint8List(length);
-    return base64.encode(data);
+    return base64.encode(cast<Uint8>().asTypedList(length));
   }
 }
 
