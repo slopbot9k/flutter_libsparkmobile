@@ -53,6 +53,33 @@ void main() {
     });
   });
 
+  group('Fee estimation input validation', () {
+    test('rejects negative group IDs like negative set IDs', () {
+      for (final groupId in [-1, -0x80000000]) {
+        expect(
+          () => LibSpark.estimateSparkFee(
+            privateKeyHex: _privateKey,
+            sendAmount: 1,
+            subtractFeeFromAmount: false,
+            serializedCoins: [
+              (
+                serializedCoin: base64Encode(Uint8List(244)),
+                serializedCoinContext: base64Encode(Uint8List(0)),
+                groupId: groupId,
+                height: 1,
+              ),
+            ],
+            privateRecipientsCount: 1,
+            utxoNum: 0,
+            additionalTxSize: 0,
+            spendVersion: SparkSpendVersion.chaumV2,
+          ),
+          throwsRangeError,
+        );
+      }
+    });
+  });
+
   group('Tag hashing', () {
     test('checks every decoded tag length', () {
       for (final length in [0, 1, 33, 35, 68]) {
@@ -149,6 +176,36 @@ void main() {
       }
     });
 
+    test('rejects indices and diversifiers outside signed int32', () async {
+      for (final value in [-1, 0x80000000, 0x100000001]) {
+        for (final index in [true, false]) {
+          await expectLater(
+            LibSpark.getAddress(
+              privateKey: _privateKey.to32BytesFromHex(),
+              index: index ? value : 1,
+              diversifier: index ? 0 : value,
+            ),
+            throwsRangeError,
+          );
+          await expectLater(
+            LibSpark.getAddressFromFullViewKey(
+              fullViewKeyHex: fullViewKey,
+              index: index ? value : 1,
+              diversifier: index ? 0 : value,
+            ),
+            throwsRangeError,
+          );
+        }
+        expect(
+          () => LibSpark.getFullViewKeyHexFromPrivateKeyData(
+            privateKeyHex: _privateKey,
+            index: value,
+          ),
+          throwsRangeError,
+        );
+      }
+    });
+
     test(
       'preserves Unicode and embedded NUL in recovered mint memos',
       () async {
@@ -178,7 +235,7 @@ void main() {
       },
     );
 
-    test('recovers arbitrary memo bytes', () {
+    test('recovers arbitrary memo bytes and unsigned diversifiers', () {
       const serializedCoin =
           'AQHiMWMbOkZUYra2YgPR6zlbpTRsTiEO2h5u14q3hh9hAQA87JhV2gEG0KdLImBgfP/olSJr7Sw0elGrr7x52i25bAEArUsP/GJEIid3EAcG1q0JaCM7v6KqLmPSfjWL/gj+258BAFokEjKkKOtsN+pvBwzDZ3wQ3me6xT1Pjmb5VN7MVQ6Knsn6CQb33jv5okWIs2t+InRYODCwFw+Lsv6ATpY+nzx/n/Vr2N8n0sQZWYBn89cwkUZS+8d5Gi6VT+kQMKy5tPxEi1hwg3QUXxFZQyB/FRTeZwrL5doyrMgZRqFP+DDR4pncEM98CU68TSvyPg==';
       final coin = LibSpark.identifyAndRecoverCoinByFullViewKey(
@@ -188,6 +245,7 @@ void main() {
       );
       expect(coin, isNotNull);
       expect(coin!.memo, '\ufffd\u0000after');
+      expect(coin.diversifier, BigInt.parse('18446744073709551615'));
       expect(coin.value, BigInt.from(100000000));
     });
 
